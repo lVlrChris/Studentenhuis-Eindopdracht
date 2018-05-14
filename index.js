@@ -7,7 +7,8 @@ const app = express();
 
 //Setup server
 app.set("PORT", config.port);
-app.set("SECRET_KEY", config.secretkey);
+app.set("SECRET_KEY", config.secretKey);
+app.set("TOKEN_EXPIRY", config.tokenExpiry);
 
 app.use(bodyParser.urlencoded({ extended:true }));
 app.use(bodyParser.json());

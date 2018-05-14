@@ -47,7 +47,17 @@ router.post("/login", (req, res) => {
     }
 });
 
+router.post("/register", (req, res) => {
 
+    //Get new user info
+    const firstName = req.body.firstname || "";
+    const lastName  = req.body.lastname || "";
+    const email = req.body.email || "";
+    const password = req.body.password || "";
+
+
+
+});
 
 //Catch empty get
 // router.get("*", (req, res) => {

@@ -1,4 +1,5 @@
 {
-  "port"      : "8080",
-  "secretkey" : "NotSoSecretKey1337-1234567ASDF"
+  "port"        : "8080",
+  "secretKey"   : "NotSoSecretKey1337-1234567ASDF",
+  "tokenExpiry" : "8"
 }
