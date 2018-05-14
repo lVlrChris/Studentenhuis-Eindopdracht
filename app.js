@@ -17,11 +17,17 @@ app.use('*', function(req, res, next){
     next(message);
 });
 
+app.use('/', function (request, response) {
+	response.json({
+		"msg": "Welkom"
+	})
+})
+
 
 app.listen(port, function(){
-    console.log('Server app is listening on port ' + port + "\r\n");
-    
+    console.log(`Server app is listening on port: ${port}`);
 });
+
 
 
 

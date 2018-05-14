@@ -26,4 +26,5 @@ module.exports = {
         console.log('deleteMaaltijd was called.');
         res.status(200).end();
     }
+    
 };

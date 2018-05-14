@@ -8,4 +8,5 @@ class StudentHuis {
     }  
 }
 
+
 module.exports = StudentenHuis
