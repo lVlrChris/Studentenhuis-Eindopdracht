@@ -1,3 +1,4 @@
 {
-  "port"    : "8080"
+  "port"      : "8080",
+  "secretkey" : "NotSoSecretKey1337-1234567ASDF"
 }
