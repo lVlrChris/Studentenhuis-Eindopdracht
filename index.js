@@ -8,8 +8,8 @@ const app = express();
 
 //Setup server
 app.set("PORT", config.port || process.evn.PORT );
-app.set("SECRET_KEY", config.secretKey);
-app.set("TOKEN_EXPIRY", config.tokenExpiry);
+app.set("SECRET_KEY", config.secretKey || process.env.SECRET_KEY);
+app.set("TOKEN_EXPIRY", config.tokenExpiry || process.env.TOKEN_EXPIRY);
 
 app.use(bodyParser.urlencoded({ extended:true }));
 app.use(bodyParser.json());
@@ -18,11 +18,6 @@ app.use(bodyParser.json());
 app.all("*", (req, res, next) => {
     console.log(req.method + " " + req.url);
     next();
-});
-
-app.get("/port", function (req, res) {
-    console.log(process.env.TOKEN_EXPIRY);
-    res.status(200).json({"port": process.env.TOKEN_EXPIRY});
 });
 
 //API routes
