@@ -2,10 +2,11 @@ const express = require("express");
 const router = express.Router();
 const auth = require("../auth/authentication");
 const users = require("../datasource/temp_users");
+let Student = require("../domain/Student");
 
 
 //Catch all except login
-router.all(new RegExp("[^(\/login)]"), (req, res, next) => {
+router.all(new RegExp("[^(\/login)|(\/register)]"), (req, res, next) => {
     console.log("Checking token..");
 
     //Retrieve token from header
@@ -55,14 +56,19 @@ router.post("/register", (req, res) => {
     const email = req.body.email || "";
     const password = req.body.password || "";
 
+    //TODO: Validate correct inputs and send appropriate response.
+    newStudent = new Student(firstName, lastName, email, password);
 
+    console.log(newStudent);
+
+    //TODO: add new student to DB
 
 });
 
 //Catch empty get
-// router.get("*", (req, res) => {
-//     res.status(200);
-//     res.json({"description": "This is API version 1"});
-// });
+router.all("*", (req, res) => {
+    res.status(200);
+    res.json({"description": "This is API version 1"});
+});
 
 module.exports = router;
