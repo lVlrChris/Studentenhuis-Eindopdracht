@@ -3,6 +3,7 @@ const router = express.Router();
 const auth = require("../auth/authentication");
 const users = require("../datasource/temp_users");
 let Student = require("../domain/Student");
+let ApiError = require("../domain/ApiError");
 
 
 //Catch all except login
@@ -44,7 +45,7 @@ router.post("/login", (req, res) => {
     if (result[0]) {
         res.status(200).json({"token" : auth.encodeToken(result.id), "email" : email});
     } else {
-        res.status(401).json({"error" : "Invalid credentials."});
+        res.status(412).json(new ApiError("Een of meer properties in de request body ontbreken of zijn foutief", 412));
     }
 });
 
@@ -56,12 +57,16 @@ router.post("/register", (req, res) => {
     const email = req.body.email || "";
     const password = req.body.password || "";
 
-    //TODO: Validate correct inputs and send appropriate response.
-    newStudent = new Student(firstName, lastName, email, password);
+    newStudent = new Student(firstName, lastName, email, password)
 
-    console.log(newStudent);
+    if(newStudent.getValidation()) {
+        res.status(200).json({"token": auth.encodeToken(newStudent.id), "email": newStudent.email});
+    } else {
+        res.status(412).json(new ApiError("Een of meer properties in de request body ontbreken of zijn foutief", 412));
+    }
 
     //TODO: add new student to DB
+    //TODO: set ID after entry.
 
 });
 

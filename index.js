@@ -2,6 +2,7 @@ const http = require ("http");
 const express = require("express");
 const config = require ("./config.json");
 const bodyParser = require("body-parser");
+const ApiError = require ("./domain/ApiError");
 
 const app = express();
 
@@ -19,19 +20,21 @@ app.all("*", (req, res, next) => {
     next();
 });
 
-app.use(express.static(__dirname + '/public'));
-
-//Test routing
-app.get("/test/hey", (req, res) => {
-    res.contentType("application/json");
-    res.json({"msg":"Hello to you!"});
-});
-
 //API routes
 app.use("/api", require("./routes/routes_apiv1"));
 
+//Error handling
+app.use((err, req, res, next) => {
+    console.log("Api error occured.");
+    console.log(err.toString());
+
+    const error = new ApiError(err.toString(), 404);
+
+    res.status(404).json(error).end();
+});
+
 //Start server
-let port = process.env.PORT || app.get('PORT');
+const port = process.env.PORT || app.get('PORT');
 
 app.listen(port, () => {
     console.log("Server started on port: " + port);
