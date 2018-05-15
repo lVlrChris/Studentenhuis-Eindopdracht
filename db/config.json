@@ -1,0 +1,8 @@
+
+{
+    "dbHost": "localhost",
+    "dbUser": "studentenhuis_user",
+    "dbPassword": "secret",
+    "dbDatabase": "studentenhuis"
+}
+

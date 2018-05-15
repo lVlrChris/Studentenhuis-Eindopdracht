@@ -1,29 +1,27 @@
 
-
 const express = require('express');
-const mysql = require('mysql');
+var mysql = require('mysql');
+var config = require('../db/config');
 
-const app = express();
+var connectionSettings = {
+    host: process.env.DB_HOST || config.dbHost,
+    user: process.env.DB_USER || config.dbUser,
+    password: process.env.DB_PASSWORD || config.dbPassword,
+    database: config.dbDatabase,
+    port: 3000,
+    debug: false
+}
 
-//create connection
-const db = mysql.createConnection({
-  host     : 'localhost',
-  user     : 'user',
-  password : 'user',
-  database : 'nodemysql'
-});
+var connection = mysql.createConnection(connectionSettings);
 
-//connect
-
-db.connect((err) => {
-    if(err){
-        console.log(err);
-        throw err;
+connection.connect(function(error) {
+    if (error){
+        console.log(error);
+        return;
+    } else{
+        console.log("Connected")
     }
-    console.log('mysql connected');
-})
-
-app.listen('3000', () => {
-    // console.log('Server started on port 3000' + `Connected to ${db.database}`);
-    console.log('Server started on port 3000');
 });
+
+module.exports = connection;
+

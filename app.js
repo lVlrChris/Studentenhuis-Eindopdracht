@@ -3,10 +3,13 @@ const express = require('express');
 const app = express();
 
 let maaltijd_routes = require('./routes/maaltijd_routes');
+let studenten_routes = require('./routes/studentenHuis_routes');
 let port = process.env.PORT || 3000;
 
 
 app.use(maaltijd_routes);
+app.use(studenten_routes);
+
 
 
 
