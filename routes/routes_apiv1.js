@@ -57,7 +57,7 @@ router.post("/register", (req, res) => {
     const email = req.body.email || "";
     const password = req.body.password || "";
 
-    newStudent = new Student(firstName, lastName, email, password)
+    newStudent = new Student(firstName, lastName, email, password);
 
     if(newStudent.getValidation()) {
         res.status(200).json({"token": auth.encodeToken(newStudent.id), "email": newStudent.email});
@@ -69,6 +69,10 @@ router.post("/register", (req, res) => {
     //TODO: set ID after entry.
 
 });
+
+//Followup routes
+router.use("/studentenhuis", require("./routes_apiv1_sHuis"));
+router.use("/studentenhuis/:huisId/maaltijd", require("./routes_apiv1_maaltijd"));
 
 //Catch empty get
 router.all("*", (req, res) => {

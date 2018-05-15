@@ -1,5 +1,10 @@
 {
   "port"        : "8080",
   "secretKey"   : "NotSoSecretKey1337-1234567ASDF",
-  "tokenExpiry" : "8"
+  "tokenExpiry" : "8",
+  "dbHost": "localhost",
+  "dbUser": "studentenhuis_user",
+  "dbPassword": "secret",
+  "dbDatabase": "studentenhuis",
+  "dbPort": "3306"
 }
