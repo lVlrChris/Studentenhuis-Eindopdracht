@@ -1,4 +1,3 @@
-//TODO: Add db
 const db = require('../datasource/db');
 
 // CRUD StudentenHuis

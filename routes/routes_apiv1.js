@@ -1,5 +1,7 @@
 const express = require("express");
-const router = express.Router();
+const apiRouter = express.Router();
+const sHuisRouter = require ("./routes_apiv1_sHuis");
+const maaltijdRouter = require ("./routes_apiv1_maaltijd");
 const auth = require("../auth/authentication");
 const users = require("../datasource/temp_users");
 let Student = require("../domain/Student");
@@ -7,7 +9,7 @@ let ApiError = require("../domain/ApiError");
 
 
 //Catch all except login
-router.all(new RegExp("[^(\/login)|(\/register)]"), (req, res, next) => {
+apiRouter.all(new RegExp("[^(\/login)|(\/register)]"), (req, res, next) => {
     console.log("Checking token..");
 
     //Retrieve token from header
@@ -19,6 +21,7 @@ router.all(new RegExp("[^(\/login)|(\/register)]"), (req, res, next) => {
             console.log("Error: " + err.message);
             res.status((err.status || 401)).json({error: new Error("Not autorised").message});
         } else {
+            console.log("Correct token.");
             next();
         }
     });
@@ -26,7 +29,7 @@ router.all(new RegExp("[^(\/login)|(\/register)]"), (req, res, next) => {
 });
 
 //Login
-router.post("/login", (req, res) => {
+apiRouter.post("/login", (req, res) => {
 
     //Get username and password
     const email = req.body.email || "";
@@ -49,7 +52,7 @@ router.post("/login", (req, res) => {
     }
 });
 
-router.post("/register", (req, res) => {
+apiRouter.post("/register", (req, res) => {
 
     //Get new user info
     const firstName = req.body.firstname || "";
@@ -71,13 +74,20 @@ router.post("/register", (req, res) => {
 });
 
 //Followup routes
-router.use("/studentenhuis", require("./routes_apiv1_sHuis"));
-router.use("/studentenhuis/:huisId/maaltijd", require("./routes_apiv1_maaltijd"));
+apiRouter.use("/studentenhuis", sHuisRouter);
+
+apiRouter.use('/studentenhuis/:huisId/maaltijd', function(req, res, next) {
+    req.huisId = req.params.huisId;
+    next()
+}, maaltijdRouter);
+
+//TODO: Deelnemer router
+
 
 //Catch empty get
-router.all("*", (req, res) => {
+apiRouter.all("*", (req, res) => {
     res.status(200);
     res.json({"description": "This is API version 1"});
 });
 
-module.exports = router;
+module.exports = apiRouter;
