@@ -7,7 +7,7 @@ const ApiError = require ("./domain/ApiError");
 const app = express();
 
 //Setup server
-app.set("PORT", config.port);
+app.set("PORT", config.port || process.evn.PORT );
 app.set("SECRET_KEY", config.secretKey);
 app.set("TOKEN_EXPIRY", config.tokenExpiry);
 
@@ -19,6 +19,11 @@ app.all("*", (req, res, next) => {
     console.log(req.method + " " + req.url);
     next();
 });
+
+app.get("/port", (req, res) => {
+    console.log(process.env.PORT);
+    res.status(200).json({"port": process.env.PORT});
+})
 
 //API routes
 app.use("/api", require("./routes/routes_apiv1"));
