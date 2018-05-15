@@ -84,7 +84,7 @@ apiRouter.use('/studentenhuis/:huisId/maaltijd', function(req, res, next) {
 //TODO: Deelnemer router
 
 
-//Catch empty get
+//Catch all others
 apiRouter.all("*", (req, res) => {
     res.status(200);
     res.json({"description": "This is API version 1"});

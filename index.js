@@ -20,10 +20,10 @@ app.all("*", (req, res, next) => {
     next();
 });
 
-app.get("/port", (req, res) => {
-    console.log(process.env.PORT);
-    res.status(200).json({"port": process.env.PORT});
-})
+app.get("/port", function (req, res) {
+    console.log(process.env.TOKEN_EXPIRY);
+    res.status(200).json({"port": process.env.TOKEN_EXPIRY});
+});
 
 //API routes
 app.use("/api", require("./routes/routes_apiv1"));
