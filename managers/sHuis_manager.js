@@ -2,7 +2,6 @@ const db = require('../datasource/db');
 
 // CRUD StudentenHuis
 
-//TODO: Error handling with ApiError.
 module.exports = {
     createStudentenhuis(req, res, next){
         console.log('createStudentenhuis was called');
@@ -15,7 +14,7 @@ module.exports = {
 
             if(error) {
                 //Als de database een error gooit doe je dit
-                res.status(400).json(error);
+                next(error);
             } else {
                 let id = rows.insertId;
 
@@ -28,7 +27,7 @@ module.exports = {
                 db.query(query, function(error, rows){
                     if(error) {
                         //Als de database een error gooit doe je dit
-                        res.status(400).json(error);
+                        next(error);
                     } else {
                         //Alle resultaten van de query terugsturen
                         res.status(200).json(rows[0]);
@@ -38,18 +37,22 @@ module.exports = {
         });
 
     },
+
     getStudentenhuis(req, res, next){
         console.log('getStudentenhuis was called');
         res.status(200).end();
     },
+
     getStudentenhuisById(req, res, next){
         console.log('getStudentenhuisById was called.');
         res.status(200).end();
     },
+
     putStudentenhuis(req, res, next){
         console.log('putStudentenhuis was called.');
         res.status(200).end();
     },
+
     deleteStudentenhuis(req, res, next){
         console.log('deleteStudentenhuis was called.');
         res.status(200).end();

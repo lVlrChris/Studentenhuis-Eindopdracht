@@ -4,8 +4,10 @@ const sHuisRouter = require ("./routes_apiv1_sHuis");
 const maaltijdRouter = require ("./routes_apiv1_maaltijd");
 const auth = require("../auth/authentication");
 const users = require("../datasource/temp_users");
+const userManager = require ("../managers/user_manager");
 let Student = require("../domain/Student");
 let ApiError = require("../domain/ApiError");
+
 
 
 //Catch all except login
@@ -52,26 +54,27 @@ apiRouter.post("/login", (req, res) => {
     }
 });
 
-apiRouter.post("/register", (req, res) => {
-
-    //Get new user info
-    const firstName = req.body.firstname || "";
-    const lastName  = req.body.lastname || "";
-    const email = req.body.email || "";
-    const password = req.body.password || "";
-
-    newStudent = new Student(firstName, lastName, email, password);
-
-    if(newStudent.getValidation()) {
-        res.status(200).json({"token": auth.encodeToken(newStudent.id), "email": newStudent.email});
-    } else {
-        res.status(412).json(new ApiError("Een of meer properties in de request body ontbreken of zijn foutief", 412));
-    }
-
-    //TODO: add new student to DB
-    //TODO: set ID after entry.
-
-});
+apiRouter.post("/register", userManager.createUser);
+// apiRouter.post("/register", (req, res) => {
+//
+//     Get new user info
+//     const firstName = req.body.firstname || "";
+//     const lastName  = req.body.lastname || "";
+//     const email = req.body.email || "";
+//     const password = req.body.password || "";
+//
+//     newStudent = new Student(firstName, lastName, email, password);
+//
+//     if(newStudent.getValidation()) {
+//         res.status(200).json({"token": auth.encodeToken(newStudent.id), "email": newStudent.email});
+//     } else {
+//         res.status(412).json(new ApiError("Een of meer properties in de request body ontbreken of zijn foutief", 412));
+//     }
+//
+//     //TODO: add new student to DB
+//     //TODO: set ID after entry.
+//
+// });
 
 //Followup routes
 apiRouter.use("/studentenhuis", sHuisRouter);
@@ -83,11 +86,5 @@ apiRouter.use('/studentenhuis/:huisId/maaltijd', function(req, res, next) {
 
 //TODO: Deelnemer router
 
-
-//Catch all others
-apiRouter.all("*", (req, res) => {
-    res.status(200);
-    res.json({"description": "This is API version 1"});
-});
 
 module.exports = apiRouter;
