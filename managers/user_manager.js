@@ -109,11 +109,31 @@ module.exports = {
             if(resultEmail === email && resultPassword === password) {
                 console.log("Correct login credentials");
                 //Make token for user
-                res.status(200).json({"token" : auth.encodeToken(result.id), "email" : email});
+                res.status(200).json({"token" : auth.encodeToken(result[0].ID), "email" : email});
             } else {
                 console.log("Incorrect login credentials");
                 res.status(412).json(new ApiError("Incorrect login credentials", 412));
             }
+        });
+    },
+
+    getUser(userId) {
+        return new Promise(function (resolve) {
+
+            let selectQuery = {
+                sql: "SELECT * FROM user " +
+                "WHERE ID = '" + userId + "';"
+            };
+
+            db.query(selectQuery, function (error, result) {
+                if (error) {
+                    console.log(error);
+                } else {
+                    searchedStudent = new Student(result[0].Voornaam, result[0].Achternaam, result[0].Email, result[0].Password);
+                    searchedStudent.setID(result[0].ID);
+                    resolve(searchedStudent);
+                }
+            });
         });
     }
 };
