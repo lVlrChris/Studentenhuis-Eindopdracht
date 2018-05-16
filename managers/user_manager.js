@@ -18,15 +18,13 @@ module.exports = {
         newStudent = new Student(firstName, lastName, email, password);
 
         //In a promise to chain queries
-        let promise = new Promise(function (resolve) {
+        new Promise(function (resolve) {
 
             //Check if user already exists.
             let checkQuery = {
                 sql: "SELECT * FROM user " +
                 "WHERE Email = '" + newStudent.email + "';"
             };
-
-            let userExists = true;
 
             db.query(checkQuery, function (error, result) {
                 //Check query errors
@@ -68,7 +66,54 @@ module.exports = {
                 });
             }
         });
+    },
+
+    loginUser(req, res, next) {
+
+        //Get username and password
+        const email = req.body.email || "";
+        const password = req.body.password || "";
+
+        //Check existing user
+        resultUser = new Promise(function (resolve) {
+
+            let checkQuery = {
+                sql: "SELECT * FROM user " +
+                "WHERE Email = '" + email + "';"
+            };
+
+            db.query(checkQuery, function (error, result) {
+                //Check query errors
+                if (error) {
+                    next(error);
+                } else {
+                    //Check if a user exists
+                    if(result.length > 0) {
+                        console.log("User found");
+                        resolve(result);
+                    } else {
+                        console.log("User not found");
+                        resolve(null);
+                    }
+
+                }
+            });
+
+        });
+
+        //Check login credentials
+        resultUser.then(function (result) {
+            let resultEmail = result[0].Email;
+            let resultPassword = result[0].Password;
+
+            if(resultEmail === email && resultPassword === password) {
+                console.log("Correct login credentials");
+                //Make token for user
+                res.status(200).json({"token" : auth.encodeToken(result.id), "email" : email});
+            } else {
+                console.log("Incorrect login credentials");
+                res.status(412).json(new ApiError("Incorrect login credentials", 412));
+            }
+        });
     }
-
-
 };
