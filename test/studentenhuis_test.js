@@ -21,6 +21,7 @@ describe('Studentenhuis API POST', () => {
                 validToken = res.body.token
             })
     })
+
     it('should throw an error when using invalid JWT token', (done) => {
         chai.request(server)
             .post("/api/studentenhuis")

@@ -1,4 +1,6 @@
 const db = require('../datasource/db');
+const auth = require ("../auth/authentication");
+const ApiError = require ("../domain/ApiError");
 
 // CRUD StudentenHuis
 
@@ -40,17 +42,101 @@ module.exports = {
 
     getStudentenhuis(req, res, next){
         console.log('getStudentenhuis was called');
-        res.status(200).end();
+
+        let selectQuery = {
+            sql: "SELECT * FROM studentenhuis;"
+        };
+
+        db.query(selectQuery, (error, result) => {
+            if(error) {
+                next(error);
+            } else {
+                console.log(result);
+                res.status(200).json(result);
+            }
+        });
     },
 
     getStudentenhuisById(req, res, next){
         console.log('getStudentenhuisById was called.');
-        res.status(200).end();
+
+        const sHuisId = req.params.huisId || "";
+
+        let selectQuery = {
+            sql: "SELECT * FROM studentenhuis " +
+            "WHERE ID = '" + sHuisId + "';"
+        };
+
+        db.query(selectQuery, (error, result) => {
+            if(error) {
+                next(error);
+            } else {
+                console.log(result);
+                res.status(200).json(result[0]);
+            }
+        });
     },
 
     putStudentenhuis(req, res, next){
         console.log('putStudentenhuis was called.');
-        res.status(200).end();
+
+        const huisId = req.params.huisId || "";
+        const name = req.body.naam || "";
+        const adress = req.body.adres || "";
+        const token = req.header("X-Access-Token") || "";
+        let userId = "";
+
+        auth.decodeToken(token, (err, payload) => {
+            if (err) {
+                next(err);
+            } else {
+                userId = payload.sub;
+            }
+        });
+
+        //Check houseID and correct owner
+        let houseExists = false;
+
+        let selectQuery = {
+            sql: "SELECT * FROM studentenhuis " +
+            "WHERE ID = '" + huisId + "' AND " +
+            "UserID = '" + userId + "';"
+        };
+
+        db.query(selectQuery, (error, result) => {
+            if (error) {
+                next(error);
+            } else {
+                if (result.length > 0) {
+                    houseExists = true;
+                } else {
+                    console.log("No applicable houses found");
+                    res.status(404).json( new ApiError("Geen studentenhuis gevonden van eigenaar: " + userId + " met ID: " + huisId , 404))
+                }
+            }
+        });
+
+        //Change entry data
+
+        let updateQuery = {
+            sql: "UPDATE studentenhuis" +
+            "SET Naam = '" + name + "', " +
+            "Adres = '" + adress + "' " +
+            "WHERE ID = '" + huisId + "' AND " +
+            "UserID = '" + userId + "';"
+        };
+
+        if (houseExists) {
+            db.query(updateQuery, (error, result) => {
+                if (error) {
+                    next(error);
+                } else {
+                    console.log(result);
+                }
+            })
+        }
+
+
     },
 
     deleteStudentenhuis(req, res, next){
