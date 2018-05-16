@@ -7,9 +7,9 @@ const ApiError = require ("./domain/ApiError");
 const app = express();
 
 //Setup server
-app.set("PORT", config.port);
-app.set("SECRET_KEY", config.secretKey);
-app.set("TOKEN_EXPIRY", config.tokenExpiry);
+app.set("PORT", config.port || process.evn.PORT );
+app.set("SECRET_KEY", config.secretKey || process.env.SECRET_KEY);
+app.set("TOKEN_EXPIRY", config.tokenExpiry || process.env.TOKEN_EXPIRY);
 
 app.use(bodyParser.urlencoded({ extended:true }));
 app.use(bodyParser.json());
@@ -23,14 +23,20 @@ app.all("*", (req, res, next) => {
 //API routes
 app.use("/api", require("./routes/routes_apiv1"));
 
+//Catch all others
+app.all("*", (req, res) => {
+    res.status(404);
+    res.json({"description": "Not an endpoint."});
+});
+
 //Error handling
 app.use((err, req, res, next) => {
     console.log("Api error occured.");
     console.log(err.toString());
 
-    const error = new ApiError(err.toString(), 404);
+    const error = new ApiError(err.toString(), err.status);
 
-    res.status(404).json(error).end();
+    res.status(error.code).json(error).end();
 });
 
 //Start server
