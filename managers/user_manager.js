@@ -141,5 +141,29 @@ module.exports = {
                 }
             });
         });
+    },
+
+    getUsers() {
+        return new Promise(function (resolve) {
+            let selectQuery = {
+                sql: "SELECT * FROM user;"
+            };
+
+            db.query(selectQuery, function (error, result) {
+                if (error) {
+                    console.log(error);
+                } else {
+                    let students = [];
+
+                    for (let i = 0; i < 0; i++) {
+                        let newStudent = new Student(result[i].Voornaam, result[i].Achternaam, result[i].Email, result[i].Password);
+                        newStudent.setID(result[i].ID);
+                        students.push(newStudent);
+                    }
+
+                    resolve(students);
+                }
+            });
+        });
     }
 };
