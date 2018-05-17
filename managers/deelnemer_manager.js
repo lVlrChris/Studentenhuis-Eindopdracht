@@ -124,83 +124,6 @@ module.exports = {
         });
     },
 
-    // getDeelnemers(req, res, next) {
-    //
-    //     //Gather submitted fields
-    //     const userToken = req.header("X-Access-Token") || "";
-    //     let userId = "";
-    //
-    //     //Decode token
-    //     auth.decodeToken(userToken, (err, payload) => {
-    //         if (err) {
-    //             next(err);
-    //         } else {
-    //             userId = payload.sub;
-    //         }
-    //     });
-    //
-    //     let tempDeelnemer = new Deelnemer(userId, req.huisId, req.maaltijdId);
-    //
-    //     //Get all matching deelnemers
-    //     new Promise(function (resolve) {
-    //
-    //         let checkQuery = {
-    //             sql: "SELECT * FROM deelnemers " +
-    //             "WHERE UserID = '" + userId + "' AND " +
-    //             "StudentenhuisID = '" + tempDeelnemer.sHuisId + "' AND " +
-    //             "MaaltijdID = '" + tempDeelnemer.maaltijdId + "';"
-    //         };
-    //
-    //         db.query(checkQuery, function (error, result) {
-    //             if (error) {
-    //                 next(error);
-    //             } else {
-    //                 if(result.length > 0) {
-    //                     console.log("Deelnemers Selected");
-    //
-    //                     // let deelnemers = new Promise(function (resolve) {
-    //                     //
-    //                     //     let resultList = [];
-    //                     //
-    //                     //     for (let i = 0; i < result.length; i++) {
-    //                     //
-    //                     //         //TODO: async timing out of this loop
-    //                     //         userManager.getUser(result[0].UserID).then(function (result) {
-    //                     //             return(result);
-    //                     //         }).then(function (result) {
-    //                     //             console.log(result);
-    //                     //             resultList.push({"voornaam": result.voornaam,
-    //                     //                 "achternaam": result.achternaam,
-    //                     //                 "email": result.achternaam});
-    //                     //             console.log("deelnemer pushed.");
-    //                     //         });
-    //                     //     }
-    //                     //
-    //                     //     console.log(resultList);
-    //                     //     resolve(resultList);
-    //                     //
-    //                     // }).then(function (result) {
-    //                     //     console.log("Deelnemers: " + result);
-    //                     //
-    //                     //     res.status(200).json({"message": "Gevonden deelnemers:", result});
-    //                     // });
-    //
-    //                     userManager.getUsers().then(function (result) {
-    //                         res.status(200).json({"message": "Gevonden deelnemers: ", result});
-    //                     });
-    //
-    //                 } else {
-    //                     console.log("Deelnemer doens't exist yet");
-    //                     res.status(412).json(new ApiError("Deelnemer voor het huis en maatlijd bestaat niet", 412));
-    //                 }
-    //             }
-    //         });
-    //
-    //     });
-    //
-    //
-    // }
-
     getDeelnemers(req, res, next) {
         console.log("getDeelnemers called.");
 
@@ -240,15 +163,78 @@ module.exports = {
             for (let i = 0; i < result1.length; i++) {
 
                 userManager.getUser(result1[i].userId).then(function (result) {
-                    let entry = {"voornaam": result.voornaam,
-                        "achternaam": result.achternaam,
-                        "email": result.email};
 
+                    let entry = {"voornaam": result.firstName, "achternaam": result.lastName, "email": result.email};
                     finalResult.push(entry);
+
                 }).then(function (result) {
-                    if(i == result1.length) {
-                        console.log(finalResult);
+
+                    //Resonse in .then to keep sync
+                    if(i === (result1.length - 1)) {
+                        console.log("Final result: " + finalResult);
                         res.status(200).json(finalResult);
+                    }
+
+                });
+            }
+        });
+    },
+
+    deleteDeelnemer(req, res, next) {
+        console.log("deleteDeelnemer is called");
+
+        //Get submitted fields
+        const huisId = req.huisId;
+        const maatlijdId = req.maaltijdId;
+        const token = req.header("X-Access-Token") || "";
+        let userId = "";
+
+        auth.decodeToken(token, (err, payload) => {
+            if (err) {
+                next(err);
+            } else {
+                userId = payload.sub;
+            }
+        });
+
+        //Check if deelnemer exists
+        new Promise(function (resolve) {
+            let selectQuery = {
+                sql: "SELECT * FROM deelnemers " +
+                "WHERE UserID = '" + userId + "' AND " +
+                "StudentenhuisID = '" + huisId + "' AND " +
+                "MaaltijdID = '" + maatlijdId + "';"
+            };
+
+            db.query(selectQuery, function (error, result) {
+                if (error) {
+                    next(error);
+                } else {
+                    if(result.length > 0) {
+                        console.log("Chosen deelnemer exists");
+                        resolve(true);
+                    } else {
+                        console.log("Chosen deelnemer doesn't exist");
+                        res.status(404).json(new ApiError("Deelnemer voor het gekozen huis en maaltijd niet gevonden."), 404);
+                        resolve(false);
+                    }
+                }
+            });
+        }).then(function (result) {
+
+            if (result) {
+                let deleteQuery = {
+                    sql: "DELETE FROM deelnemers " +
+                    "WHERE UserID = '" + userId + "' AND " +
+                    "StudentenhuisID = '" + huisId + "' AND " +
+                    "MaaltijdID = '" + maatlijdId + "';"
+                };
+
+                db.query(deleteQuery, function (error, result) {
+                    if(error) {
+                        next(error);
+                    } else {
+                        res.status(200).json({"message": "Deelnemer succesvol verwijderd."});
                     }
                 });
             }

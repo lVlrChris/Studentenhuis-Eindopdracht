@@ -4,6 +4,6 @@ const deelnemerManager = require("../managers/deelnemer_manager");
 
 deelnemerRouter.post("/", deelnemerManager.createDeelnemer);
 deelnemerRouter.get("/", deelnemerManager.getDeelnemers);
-// deelnemerRouter.delete("/", deelnemerRouter.deleteDeelnemer);
+deelnemerRouter.delete("/", deelnemerManager.deleteDeelnemer);
 
 module.exports = deelnemerRouter;
