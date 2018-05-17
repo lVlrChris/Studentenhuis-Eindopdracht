@@ -1,6 +1,7 @@
 const Maaltijd = require('../domain/Maaltijd');
 const auth = require("../auth/authentication");
 const db = require("../datasource/db");
+const ApiError = require ("../domain/ApiError");
 
 let maaltijdList = [];
 
@@ -13,12 +14,22 @@ module.exports = {
         const huisId = req.huisId || "";
         const token = req.header("X-Access-Token") || "";
         let userId = "";
+        let newMaaltijd;
 
-        let newMaaltijd = new Maaltijd(req.body.naam,
-            req.body.beschrijving,
-            req.body.ingredienten,
-            req.body.allergie,
-            req.body.prijs);
+        if (req.body.naam === "" ||
+            req.body.beschrijving === "" ||
+            req.body.ingredienten === "" ||
+            req.body.allergie === "" ||
+            req.body.prijs) {
+
+            res.status(412).json(new ApiError("Een of meerdere velden zijn leeg.", 412));
+        } else {
+            newMaaltijd = new Maaltijd(req.body.naam,
+                req.body.beschrijving,
+                req.body.ingredienten,
+                req.body.allergie,
+                req.body.prijs);
+        }
 
         auth.decodeToken(token, (err, payload) => {
             if (err) {
@@ -27,6 +38,8 @@ module.exports = {
                 userId = payload.sub;
             }
         });
+
+
 
         new Promise(function (resolve) {
             //Check if house exists
@@ -43,7 +56,6 @@ module.exports = {
                 } else {
                     if (result.length > 0) {
                         houseExists = true;
-                        //TODO: maaltijd object verifications (412)
                         resolve(houseExists);
                     } else {
                         console.log("No houses found");
