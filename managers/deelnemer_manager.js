@@ -10,13 +10,18 @@ module.exports = {
         console.log("createDeelnemer was called");
 
         //Gather submitted fields
-        const userId = req.body.userid || "";
-        const sHuisId = req.huisId || "";
-        const maaltijdId = req.maaltijdId || "";
+        const token = req.header("X-Access-Token") || "";
+        let userId = "";
 
-        if (userId !== "" && sHuisId !== "" && maaltijdId !== "") {
-            newDeelnemer = new Deelnemer(userId, sHuisId, maaltijdId);
-        }
+        auth.decodeToken(token, (err, payload) => {
+            if (err) {
+                next(err);
+            } else {
+                userId = payload.sub;
+            }
+        });
+
+        let newDeelnemer = new Deelnemer(userId, req.huisId, req.maaltijdId);
 
         new Promise(function (resolve) {
 
@@ -103,13 +108,16 @@ module.exports = {
                         next(error);
                     } else {
                         console.log("Deelnemer succesfully inserted.");
-                        //TODO: return Voornaam, Achternaam, email
+
+                        let dStudent = userManager.getUser(newDeelnemer.userId).then(function (result) {
+                            return result;
+                        });
+
                         res.status(200).json({
                             "message": "Deelnemer successvol toegevoegd.",
-                            "userid": newDeelnemer.userId,
-                            "huisid": newDeelnemer.sHuisId,
-                            "maaltijdid": newDeelnemer.maaltijdId});
-
+                            "voornaam": dStudent.voornaam,
+                            "achternaam": dStudent.achternaam,
+                            "email": dStudent.email});
                     }
                 });
             }
@@ -121,9 +129,6 @@ module.exports = {
         //Gather submitted fields
         const userToken = req.header("X-Access-Token") || "";
         let userId = "";
-        const sHuisId = req.huisId || "";
-        const maaltijdId = req.maaltijdId || "";
-
 
         //Decode token
         auth.decodeToken(userToken, (err, payload) => {
@@ -133,6 +138,8 @@ module.exports = {
                 userId = payload.sub;
             }
         });
+
+        let tempDeelnemer = new Deelnemer(userId, req.huisId, req.maaltijdId);
 
         userManager.getUser(2).then(function (res) {
 
@@ -144,8 +151,8 @@ module.exports = {
             let checkQuery = {
                 sql: "SELECT * FROM deelnemers " +
                 "WHERE UserID = '" + userId + "' AND " +
-                "StudentenhuisID = '" + sHuisId + "' AND " +
-                "MaaltijdID = '" + maaltijdId + "';"
+                "StudentenhuisID = '" + tempDeelnemer.sHuisId + "' AND " +
+                "MaaltijdID = '" + tempDeelnemer.maaltijdId + "';"
             };
 
             db.query(checkQuery, function (error, result) {
@@ -154,17 +161,20 @@ module.exports = {
                 } else {
                     if(result.length > 0) {
                         console.log("Deelnemers Selected");
-                        //TODO: Voornaam, Achternaam, Email
 
-                        let deelnemers = [];
+                        let deelnemers;
 
+                        for (let i = 0; i < result.length; i++) {
 
-                        for (let i = 0; i > result.length; i++) {
-                            deelnemers.push(new Student(result[i].Voornaam,
-                                result[i].Achternaam,
-                                result[i].Email,
-                                result[i].Password));
-                            console.log(result[i]);
+                            //TODO: async timing out of this loop
+                            let deelnemer = userManager.getUser(result[0].UserID).then(function (result) {
+                                return(result);
+                            }).then(function (result) {
+                                console.log(result);
+                                deelnemers.push({"voornaam": result.voornaam,
+                                    "achternaam": result.achternaam,
+                                    "email": result.achternaam});
+                            });
                         }
 
                         console.log(deelnemers);

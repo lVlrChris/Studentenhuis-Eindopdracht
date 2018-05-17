@@ -10,12 +10,18 @@ module.exports = {
         console.log("createUser was called.");
 
         //Gather submitted fields
-        const firstName = req.body.firstname || "";
-        const lastName  = req.body.lastname || "";
-        const email = req.body.email || "";
-        const password = req.body.password || "";
+        // const firstName = req.body.firstname || "";
+        // const lastName  = req.body.lastname || "";
+        // const email = req.body.email || "";
+        // const password = req.body.password || "";
+        //
+        // newStudent = new Student(firstName, lastName, email, password);
 
-        newStudent = new Student(firstName, lastName, email, password);
+        //TODO: Encrypt passwords
+        let newStudent = new Student(req.body.firstname,
+            req.body.lastname,
+            req.body.email,
+            req.body.password);
 
         //In a promise to chain queries
         new Promise(function (resolve) {
@@ -129,7 +135,7 @@ module.exports = {
                 if (error) {
                     console.log(error);
                 } else {
-                    searchedStudent = new Student(result[0].Voornaam, result[0].Achternaam, result[0].Email, result[0].Password);
+                    let searchedStudent = new Student(result[0].Voornaam, result[0].Achternaam, result[0].Email, result[0].Password);
                     searchedStudent.setID(result[0].ID);
                     resolve(searchedStudent);
                 }

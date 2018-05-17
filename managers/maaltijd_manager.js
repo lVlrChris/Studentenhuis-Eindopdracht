@@ -1,4 +1,4 @@
-const maaltijd = require('../domain/Maaltijd');
+const Maaltijd = require('../domain/Maaltijd');
 const auth = require("../auth/authentication");
 const db = require("../datasource/db");
 
@@ -10,14 +10,15 @@ module.exports = {
     createMaaltijd(req, res, next){
         console.log('createMaaltijd was called');
 
-        const name = req.body.naam || "";
-        const desc = req.body.beschrijving || "";
-        const ingr = req.body.ingredienten || "";
-        const allergy = req.body.allergie || "";
-        const price = req.body.prijs || "";
         const huisId = req.huisId || "";
         const token = req.header("X-Access-Token") || "";
         let userId = "";
+
+        let newMaaltijd = new Maaltijd(req.body.naam,
+            req.body.beschrijving,
+            req.body.ingredienten,
+            req.body.allergie,
+            req.body.prijs);
 
         auth.decodeToken(token, (err, payload) => {
             if (err) {
@@ -42,7 +43,7 @@ module.exports = {
                 } else {
                     if (result.length > 0) {
                         houseExists = true;
-                        //TODO: make maaltijd object with verifications (412)
+                        //TODO: maaltijd object verifications (412)
                         resolve(houseExists);
                     } else {
                         console.log("No houses found");
@@ -58,11 +59,11 @@ module.exports = {
             if(result) {
                 let insertQuery = {
                     sql: "INSERT INTO maaltijd (Naam, Beschrijving, Ingredienten, Allergie, Prijs, UserID, StudentenhuisID) " +
-                    "VALUES ('" + name + "', " +
-                    "'" + desc + "', " +
-                    "'" + ingr + "', " +
-                    "'" + allergy + "', " +
-                    "'" + price + "', " +
+                    "VALUES ('" + newMaaltijd.naam + "', " +
+                    "'" + newMaaltijd.beschrijving + "', " +
+                    "'" + newMaaltijd.ingredienten + "', " +
+                    "'" + newMaaltijd.allergie + "', " +
+                    "'" + newMaaltijd.prijs + "', " +
                     "'" + userId + "', " +
                     "'" + huisId + "');"
                 };
@@ -74,11 +75,11 @@ module.exports = {
                         console.log("Maaltijd successfully inserted.");
                         res.status(200).json({
                             "ID": result.insertId,
-                            "naam": name,
-                            "beschrijving": desc,
-                            "ingredienten": ingr,
-                            "allergie": allergy,
-                            "prijs": price});
+                            "naam": newMaaltijd.name,
+                            "beschrijving": newMaaltijd.beschrijving,
+                            "ingredienten": newMaaltijd.ingredienten,
+                            "allergie": newMaaltijd.allergie,
+                            "prijs": newMaaltijd.prijs});
                     }
                 });
             }
