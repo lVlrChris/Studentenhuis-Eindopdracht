@@ -7,6 +7,8 @@ const ApiError = require ("../domain/ApiError");
 module.exports = {
     createStudentenhuis(req, res, next){
         console.log('createStudentenhuis was called');
+
+        //TODO: Make SHuis object for verificaiton.
         let query = {
             sql : 'INSERT INTO `studentenhuis` (`Adres`, `Naam`, `UserID`) VALUES (\'' + req.body.adres + '\', \'' + req.body.naam + '\', \'' + req.body.id + '\');',
         };
@@ -51,8 +53,13 @@ module.exports = {
             if(error) {
                 next(error);
             } else {
-                console.log(result);
-                res.status(200).json(result);
+                if (result > 0) {
+                    console.log("House found");
+                    res.status(200).json(result);
+                } else {
+                    console.log("No houses found");
+                    res.status(404).json(new ApiError("No houses found", 404));
+                }
             }
         });
     },
@@ -71,8 +78,13 @@ module.exports = {
             if(error) {
                 next(error);
             } else {
-                console.log(result);
-                res.status(200).json(result[0]);
+                if (result > 0) {
+                    console.log("House found");
+                    res.status(200).json(result[0]);
+                } else {
+                    console.log("No houses found");
+                    res.status(404).json(new ApiError("No houses found", 404));
+                }
             }
         });
     },
