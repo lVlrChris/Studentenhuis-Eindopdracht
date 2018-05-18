@@ -4,10 +4,7 @@ const sHuisRouter = require ("./routes_apiv1_sHuis");
 const maaltijdRouter = require ("./routes_apiv1_maaltijd");
 const deelnemerRouter = require ("./routes_apiv1_deelnemer");
 const auth = require("../auth/authentication");
-const users = require("../datasource/temp_users");
 const userManager = require ("../managers/user_manager");
-let Student = require("../domain/Student");
-let ApiError = require("../domain/ApiError");
 
 
 

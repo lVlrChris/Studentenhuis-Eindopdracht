@@ -6,6 +6,20 @@ class Maaltijd {
         this.ingredienten = ingredienten;
         this.allergie = allergie;
         this.prijs = prijs;
+
+        //TODO: Validation (assert)
+    }
+
+    setId(id) {
+        this.id = id;
+    }
+
+    setUserId(userId) {
+        this.userId = userId;
+    }
+
+    setHuisId(huisId) {
+        this.huisId = huisId;
     }
 }
 

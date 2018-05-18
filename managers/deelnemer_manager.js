@@ -3,7 +3,6 @@ const Deelnemer = require ("../domain/Deelnemer");
 const ApiError = require ("../domain/ApiError");
 const auth = require ("../auth/authentication");
 const userManager = require ("../managers/user_manager");
-const Student = require ("../domain/Student");
 
 module.exports = {
     createDeelnemer(req, res, next) {

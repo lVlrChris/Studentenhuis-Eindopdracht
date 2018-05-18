@@ -100,19 +100,222 @@ module.exports = {
 
     getMaaltijd(req, res, next){
         console.log('getMaaltijd was called');
-        res.status(200).end();
+
+        //Gather submitted fields
+        const huisId = req.huisId;
+
+        new Promise((resolve)  => {
+            const selectQuery = {
+                sql: "SELECT * FROM maaltijd " +
+                "WHERE StudentenhuisID = '" + huisId + "';"
+            };
+
+            db.query(selectQuery, function (error, result) {
+                if(error) {
+                    next(error);
+                } else {
+                    //Check if any results for query
+                    if (result.length > 0) {
+                        console.log("Maaltijd(en) found.");
+                        let maaltijden = [];
+                        for (let i = 0; i < result.length; i++) {
+                            let newMaaltijd = new Maaltijd(
+                                result[i].Naam,
+                                result[i].Beschrijving,
+                                result[i].Ingredienten,
+                                result[i].Allergie,
+                                result[i].Prijs);
+                            newMaaltijd.setId(result[i].ID);
+                            maaltijden.push(newMaaltijd);
+                        }
+
+                        resolve(maaltijden);
+
+                    } else {
+                        console.log("No Maaltijd(en) found.");
+                        res.status(404).json(new ApiError("Geen maaltijd(en) gevonden.", 404));
+                    }
+                }
+            });
+        }).then(function (result) {
+            res.status(200).json(result);
+        });
     },
     getMaaltijdById(req, res, next){
         console.log('getMaaltijdById was called.');
-        res.status(200).end();
+
+        //Gather submitted fields
+        const huisId = req.huisId;
+        const maaltijdId = req.params.maaltijdId;
+
+        new Promise((resolve)  => {
+            const selectQuery = {
+                sql: "SELECT * FROM maaltijd " +
+                "WHERE StudentenhuisID = '" + huisId + "' AND " +
+                "ID = '" + maaltijdId + "';"
+            };
+
+            db.query(selectQuery, function (error, result) {
+                if(error) {
+                    next(error);
+                } else {
+                    //Check if any results for query
+                    if (result.length > 0) {
+                        console.log("Maaltijd found.");
+                        let maaltijden = [];
+                        for (let i = 0; i < result.length; i++) {
+                            let newMaaltijd = new Maaltijd(
+                                result[i].Naam,
+                                result[i].Beschrijving,
+                                result[i].Ingredienten,
+                                result[i].Allergie,
+                                result[i].Prijs);
+                            newMaaltijd.setId(result[i].ID);
+                            maaltijden.push(newMaaltijd);
+                        }
+
+                        resolve(maaltijden);
+
+                    } else {
+                        console.log("No Maaltijd found.");
+                        res.status(404).json(new ApiError("Geen maaltijd gevonden.", 404));
+                    }
+                }
+            });
+        }).then(function (result) {
+            res.status(200).json(result);
+        });
     },
+
     putMaaltijd(req, res, next){
         console.log('putMaaltijd was called.');
-        res.status(200).end();
+
+        //Gather submitted fields
+        const huisId = req.huisId;
+        const maaltijdId = req.params.maaltijdId;
+        const token = req.header("X-Access-Token") || "";
+        let userId = "";
+
+        //Changed maaltijd fields
+        const newMaaltijd = new Maaltijd(req.body.naam, req.body.beschrijving, req.body.ingredienten, req.body.allergie, req.body.prijs);
+        newMaaltijd.setUserId(userId);
+        newMaaltijd.setHuisId(huisId);
+
+        auth.decodeToken(token, (err, payload) => {
+            if (err) {
+                next(err);
+            } else {
+                userId = payload.sub;
+            }
+        });
+
+        new Promise(function (resolve) {
+            const updateQuery = {
+                sql: "UPDATE maaltijd " +
+                "SET Naam = '" + newMaaltijd.naam + "', " +
+                "Beschrijving = '" + newMaaltijd.beschrijving + "', " +
+                "Ingredienten = '" + newMaaltijd.ingredienten + "', " +
+                "Allergie = '" + newMaaltijd.allergie + "', " +
+                "Prijs = '" + newMaaltijd.prijs + "' " +
+                "WHERE StudentenhuisID = '" + huisId + "' AND " +
+                "ID = '" + maaltijdId + "' AND " +
+                "UserID = '" + userId + "';"
+            };
+
+            db.query(updateQuery, function (error, result) {
+                if (error) {
+                    next(error);
+                } else {
+                    if (result.affectedRows > 0) {
+                        console.log("Maaltijd succesfully updated");
+                        resolve();
+                    } else if (result.affectedRows === 0) {
+                        console.log("No Maaltijd found.");
+                        res.status(404).json(new ApiError("Geen maaltijd gevonden of geen eigenaar van Maaltijd."), 404);
+                    }
+                }
+            });
+
+        }).then(function (result) {
+
+            new Promise((resolve)  => {
+                const selectQuery = {
+                    sql: "SELECT * FROM maaltijd " +
+                    "WHERE StudentenhuisID = '" + huisId + "' AND " +
+                    "ID = '" + maaltijdId + "';"
+                };
+
+                db.query(selectQuery, function (error, result) {
+                    if(error) {
+                        next(error);
+                    } else {
+                        //Check if any results for query
+                        if (result.length > 0) {
+                            console.log("Maaltijd found.");
+                            let maaltijden = [];
+                            for (let i = 0; i < result.length; i++) {
+                                let newMaaltijd = new Maaltijd(
+                                    result[i].Naam,
+                                    result[i].Beschrijving,
+                                    result[i].Ingredienten,
+                                    result[i].Allergie,
+                                    result[i].Prijs);
+                                newMaaltijd.setId(result[i].ID);
+                                maaltijden.push(newMaaltijd);
+                            }
+
+                            resolve(maaltijden);
+
+                        } else {
+                            console.log("No Maaltijd found.");
+                            res.status(404).json(new ApiError("Geen maaltijd gevonden.", 404));
+                        }
+                    }
+                });
+            }).then(function (result) {
+                res.status(200).json(result);
+            });
+        });
     },
+
     deleteMaaltijd(req, res, next){
         console.log('deleteMaaltijd was called.');
-        res.status(200).end();
-    }
 
+        //Gather submitted fields
+        const huisId = req.huisId;
+        const maaltijdId = req.params.maaltijdId;
+        const token = req.header("X-Access-Token") || "";
+        let userId = "";
+
+        auth.decodeToken(token, (err, payload) => {
+            if (err) {
+                next(err);
+            } else {
+                userId = payload.sub;
+            }
+        });
+
+        new Promise(function (resolve) {
+            const deleteQuery = {
+                sql: "DELETE FROM maaltijd " +
+                "WHERE StudentenhuisID = '" + huisId + "' AND " +
+                "ID = '" + maaltijdId + "' AND " +
+                "UserID = '" + userId + "';"
+            };
+
+            db.query(deleteQuery, function (error, result) {
+                if (error) {
+                    next(error);
+                } else {
+                    if (result.affectedRows > 0) {
+                        console.log("Maaltijd successfully deleted.");
+                        res.status(200).json({"message": "Maaltijd succesvol verwijderd."});
+                    } else if (result.affectedRows === 0) {
+                        console.log("No Maaltijd found");
+                        res.status(404).json(new ApiError("Geen maaltijd gevonden", 404));
+                    }
+                }
+            });
+        });
+    }
 };
